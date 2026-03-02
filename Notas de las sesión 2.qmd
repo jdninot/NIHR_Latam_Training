@@ -1,6 +1,6 @@
 ---
 title: "Sesion 1 y 2: Introducción a R"
-author: "David Niño"
+author: "David Niño-Torres"
 format:
   html:
         code-fold: false 
