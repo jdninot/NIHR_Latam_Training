@@ -1,0 +1,332 @@
+---
+title: "Sesión 5: Estadística Descriptiva"
+author: "David Niño"
+format:
+  html:
+        code-fold: false 
+        code-tools: false
+        code-overflow: wrap
+     
+        theme: Cosmo
+        
+        self-contained: true
+        
+        toc: true
+        toc-title: Contento
+editor: visual
+---
+
+# Introducción a la estadística descriptiva y visualización de datos
+
+## Objetivo
+
+Capacitar a los participantes para que puedan resumir, analizar e interpretar conjuntos de datos utilizando las principales medidas de tendencia central y dispersión, así como seleccionar y construir gráficos básicos (como histogramas, diagramas de caja y gráficos de barras) para una comunicación efectiva de la información.
+
+## ¿Qué es la Estadística Descriptiva?
+
+La estadística descriptiva es la rama inicial de la estadística que se dedica a recopilar, organizar, analizar y resumir un conjunto de datos observados, utilizando herramientas numéricas y gráficas para describirlos de manera clara y concisa.
+
+## Librerías
+
+```{r}
+#| warning: false
+library(rio)        # Para importar/exportar datos en múltiples formatos (Excel, CSV...)
+library(tidyverse)  # Conjunto de paquetes para manipulación y visualización (dplyr, ggplot2...)
+library(gtsummary)  # Crear tablas de resumen descriptivo
+library(skimr)      # Resumen rápido de la base (estructura y estadísticas)
+library(naniar)     # Análisis y visualización de datos faltantes
+library(DescTools)  # Funciones estadísticas adicionales (ej: Moda)
+library(scales)     # Escalas y formateo en gráficos (ej. porcentajes)
+library(sf)         # Manejo de datos espaciales y shapefiles (mapas)
+```
+
+## Datos COVID-19
+
+<div style="font-size: 0.8em">
+
+| Variable | Etiqueta | Tipo | Valores / Categorías | Descripción |
+|-----------|-----------|------|----------------------|--------------|
+| Fecha_reporte_web | Fecha cargue web | Fecha | DD/MM/AAAA | Fecha del reporte web. |
+| ID_de_caso | Caso | Numérico | ID único | Identificador único del caso. |
+| Fecha_notificacion | Fecha Not | Fecha | DD/MM/AAAA | Fecha de notificación. |
+| Cod_DIVIPOLA_depto | Departamento | Texto/Código | Ej: 13001 | Código del departamento. |
+| Nombre_departamento | Departamento_nom | Texto | Ej: BOLIVAR | Nombre del departamento. |
+| Cod_DIVIPOLA_mpio | Ciudad_municipio | Texto/Código | Código DIVIPOLA | Código del municipio. |
+| Nombre_municipio | Ciudad_municipio_nom | Texto | Texto | Nombre del municipio. |
+| Edad | Edad | Numérico | Entero | Edad del paciente. |
+| Unidad_medida_edad | unidad_medida | Texto/Num | 1-Años, 2-Meses, 3-Días | Unidad de tiempo de la edad. |
+| Sexo | Sexo | Texto | F, M | Género del paciente. |
+| Tipo_contagio | Fuente_tipo_contagio | Texto | Relacionado, Importado, En estudio, Comunitario | Origen del contagio. |
+| Ubicacion | Ubicacion | Texto | Casa, Hosp, UCI, Fallecido, N/A | Estado actual del caso. |
+| Estado | Estado | Texto | Leve, Mod, Grave, Fallecido, N/A | Gravedad al reporte. |
+| Recuperado | Recuperado | Texto | Recuperado, Fallecido, N/A, vacío | Estado final. |
+| Fecha_inicio_sintomas | Fecha_inicio_sintomas | Fecha | DD/MM/AAAA | Fecha de inicio de síntomas. |
+| Fecha_muerte | Fecha_muerte | Fecha | DD/MM/AAAA | Fecha del fallecimiento. |
+| Fecha_diagnostico | Fecha_diagnostico | Fecha | DD/MM/AAAA | Fecha del diagnóstico. |
+| Fecha_recuperacion | Fecha_recuperado | Fecha | DD/MM/AAAA | Fecha de recuperación. |
+| Tipo_recuperacion | Tipo_recuperacion | Texto | PCR, Tiempo clínico | Criterio de recuperación. |
+
+</div>
+
+## Lectura de los datos
+
+Carga la base de datos del INS del COVID 19 hasta 2020-06-05
+
+```{r}
+#| message: true
+#| warning: true
+
+datos <- import("Data_COVID_INS_5302020.csv")
+```
+
+## Limpieza y transformación de variables
+
+Convierte las columnas de fecha (actualmente texto) al tipo `Date`, usando el formato adecuado
+
+Todas las fechas están en formato "año/mes/día" ("%Y/%m/%d").
+
+```{r}
+# Argumentos / columnas:
+# - Fecha Not: Fecha de notificación del caso.
+# - Fecha de inicio de síntomas: Fecha en que comenzaron los síntomas.
+# - Fecha de diagnóstico: Fecha en que se confirmó el diagnóstico.
+# - Fecha de muerte: Fecha de fallecimiento (si aplica).
+# - Fecha recuperado: Fecha en que el paciente fue declarado recuperado.
+
+# Convertir fechas de texto a formato fecha (Date)
+datos$`Fecha Not` <- as.Date(datos$`Fecha Not`, format = "%Y/%m/%d")
+datos$`Fecha de inicio de síntomas` <- as.Date(datos$`Fecha de inicio de síntomas`, format = "%Y/%m/%d")
+datos$`Fecha de diagnóstico` <- as.Date(datos$`Fecha de diagnóstico`, format = "%Y/%m/%d")
+datos$`Fecha de muerte` <- as.Date(datos$`Fecha de muerte`, format = "%Y/%m/%d")
+datos$`Fecha recuperado` <- as.Date(datos$`Fecha recuperado`, format = "%Y/%m/%d")
+```
+
+Transforma variables categóricas a tipo `factor` y asigna etiquetas descriptivas a las categorías (por ejemplo, “Femenino” en lugar de “F”).
+
+```{r}
+# Convertir variables categóricas a factor con etiquetas
+datos$Sexo <- factor(datos$Sexo, levels = c("F", "M"), labels = c("Femenino", "Masculino"))
+datos$Departamento <- as.factor(datos$Departamento)
+datos$Ciudad <- as.factor(datos$Ciudad)
+datos$Tipo <- as.factor(datos$Tipo)
+datos$Ubicación <- as.factor(datos$Ubicación)
+datos$Estado <- as.factor(datos$Estado)
+datos$`Pais de procedencia` <- as.factor(datos$`Pais de procedencia`)
+datos$Recuperacion <- as.factor(datos$Recuperacion)
+```
+
+::: callout-important
+
+Las funciones con as. (`as.Date()`, `as.factor()`, `as.numeric()`, etc.) se usan para convertir un objeto que ya existe a otro tipo de dato. Es decir, transforman una variable que está en un formato diferente (texto, número, etc.) al tipo deseado.
+
+- Ejemplo: si tienes una columna con fechas escritas como texto "2020/05/03", usas `as.Date("2020/05/03")` para convertir ese texto a un objeto de tipo fecha reconocido por R.
+
+Las funciones sin as. (`Date()`, `factor()`, `numeric()`, etc.) se usan para crear un objeto nuevo desde cero de ese tipo, no para convertir uno existente.
+
+- Ejemplo: puedes usar factor(c("F", "M", "F")) para crear directamente una variable categórica con esos valores.
+
+::: 
+
+Renombrar columnas: reemplaza espacios por "_"
+
+```{r}
+names(datos) <- gsub(" ", "_", names(datos))
+```
+
+## Exploración inicial
+
+Los pasos principales son:
+
+- Exploración general y revisión de datos faltantes
+- Visualización de variables cuantitativas y categóricas
+- Cálculo de medidas descriptivas (tendencia central, dispersión)
+- Creación de gráficos tipo boxplot
+- Tablas de frecuencias y resúmenes automáticos
+
+Se genera una visión general del conjunto de datos, observando su estructura y completitud.
+
+```{r}
+# Porcentaje de datos faltantes por variable
+datos %>%
+  gg_miss_var(show_pct = TRUE) +
+  labs(title = "Porcentaje de datos faltantes por variable")
+
+```
+```{r}
+# Tabla con conteo de datos faltantes
+datos %>% miss_var_summary()
+
+```
+
+```{r}
+# Resumen general (conteo, medias, etc.)
+# skimr::skim(datos)
+```
+### Histograma
+
+Un histograma es una representación gráfica de la distribución de frecuencias de un conjunto de datos numéricos. Muestra cómo se distribuyen los valores en intervalos (llamados clases o bins).
+
+Para construir un histograma en R con ggplot2, se utiliza la función `ggplot()` junto con `geom_histogram()`. 
+
+- Primero, en `ggplot(datos, aes(x = Edad))` se especifica el conjunto de datos y se asigna la variable Edad al eje x dentro de la función `aes()`, que define las estéticas del gráfico. 
+- Luego, `geom_histogram()` crea el histograma propiamente dicho, donde el parámetro fill define el color de relleno de las barras, en este caso un tono naranja ("#F87C63"), y color = "white" añade un borde blanco a cada barra para mejorar la separación visual. El argumento bins = 30 controla la cantidad de barras o “bins” en el histograma, lo que afecta el nivel de detalle de la distribución. 
+- Con `labs()` se añaden títulos y etiquetas a los ejes para que el gráfico sea claro y descriptivo: el título general, y las etiquetas de los ejes x e y. 
+- Finalmente, `theme_bw()` aplica un tema limpio con fondo blanco y líneas discretas, mejorando la legibilidad del gráfico.
+
+```{r}
+ggplot(datos, aes(x = Edad)) +
+  geom_histogram(fill = "#F87C63", color = "white", bins = 30) +
+  labs(
+    title = "Histograma de la edad de los casos",
+    x = "Edad (años)", y = "Frecuencia"
+  ) +
+  theme_bw()
+```
+
+Permite visualizar la frecuencia de casos según el sexo, mostrando diferencias de representación (en frencuencia).
+
+- Para crear un gráfico de barras que muestre la distribución de casos por sexo con ggplot2, se inicia con `ggplot(datos, aes(x = Sexo, fill = Sexo))`, donde se indica que la variable categórica Sexo será el eje x y también determinará el color de relleno de las barras. 
+- La función `geom_bar()` genera las barras, con un borde blanco definido por color = "white" y un ancho más estrecho de width = 0.4 para un mejor diseño visual. 
+- Para añadir las etiquetas con el conteo exacto de cada barra, se usa `geom_text()` con el parámetro stat = "count" que calcula automáticamente las frecuencias, y `aes(label = ..count..)` muestra esos valores encima de las barras; vjust = -0.5 ajusta la posición vertical del texto y size = 4 su tamaño. 
+- La paleta de colores se personaliza con `scale_fill_manual()`, asignando un tono púrpura para "Femenino" y azul para "Masculino". 
+- Finalmente, `labs()` agrega el título y etiquetas claras para los ejes, y `theme_minimal()` aplica un estilo limpio y sencillo que enfatiza el contenido del gráfico.
+
+```{r}
+ggplot(datos, aes(x = Sexo, fill = Sexo)) +
+  geom_bar(color = "white", width = 0.4) +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("Femenino" = "#A684FF", "Masculino" = "#3498DB")) +
+  labs(
+    title = "Distribución de casos por sexo",
+    x = "Sexo", y = "Frecuencia"
+  ) +
+  theme_minimal()
+```
+
+Permite visualizar la frecuencia de casos según el sexo, mostrando diferencias de representación (en porcentaje).
+
+```{r}
+ggplot(datos, aes(x = Sexo, fill = Sexo)) +
+  geom_bar(color = "white", width = 0.4) +
+  geom_text(stat = "count", aes(label = paste0(round(..count../sum(..count..) * 100, 1), "%")),
+            vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("Femenino" = "#A684FF", "Masculino" = "#3498DB")) +
+  labs(
+    title = "Distribución de casos por sexo",
+    x = "Sexo", y = "Frecuencia"
+  ) +
+  theme_minimal()
+```
+
+## Estadísticos Descriptivos
+
+En esta sección se calculan medidas de tendencia central y dispersión para la variable Edad.
+
+```{r}
+mean(datos$Edad)    # Media
+median(datos$Edad)  # Mediana
+Mode(datos$Edad)    # Moda
+```
+Los resultados obtenidos muestran una media de 38.94 años, una mediana de 36 años y una moda de 29 años.
+
+Esto significa que, en promedio, la edad de las personas con casos de COVID-19 en el conjunto de datos es de aproximadamente 39 años. La mediana (36 años) indica que la mitad de los casos corresponde a personas menores de 36 años y la otra mitad a personas mayores. La moda (29 años) señala que esta edad es la más frecuente entre los casos registrados.
+
+El hecho de que la media sea mayor que la mediana sugiere que la distribución de las edades está sesgada hacia la derecha (asimetría positiva), es decir, que existen algunos casos de personas mayores que elevan ligeramente el promedio. En conjunto, se puede interpretar que la mayoría de los casos de COVID-19 se concentran en adultos jóvenes, pero con cierta presencia de personas de mayor edad que incrementan la media general.
+
+```{r}
+sd(datos$Edad, na.rm = TRUE)      # Desviación estándar
+var(datos$Edad, na.rm = TRUE)     # Varianza
+range(datos$Edad, na.rm = TRUE)   # Rango (mínimo y máximo)
+IQR(datos$Edad, na.rm = TRUE)     # Rango intercuartílico
+```
+Los resultados indican una desviación estándar de 18.75 años, una varianza de 351.58, un rango entre 0 y 103 años, y un rango intercuartílico (IQR) de 26 años.
+
+La desviación estándar refleja el grado de dispersión de las edades respecto a la media (≈39 años); en este caso, una desviación de casi 19 años indica una alta variabilidad, lo que sugiere que los casos incluyen tanto personas jóvenes como mayores.
+
+El rango total (de 0 a 103 años) muestra que los casos abarcan desde recién nacidos hasta personas centenarias, lo cual evidencia una afectación en todas las edades, aunque no necesariamente con la misma frecuencia. Por su parte, el rango intercuartílico (IQR = 26) indica que el 50 % de los casos se concentran dentro de un intervalo de 26 años alrededor de la mediana (36 años), es decir, entre aproximadamente 23 y 49 años.
+
+Para agregar el porcentaje en lugar del conteo en el gráfico de barras, se modifica la capa `geom_text()` dentro del código de ggplot2. En este caso, se reemplaza la etiqueta `aes(label = ..count..)` por una expresión que calcula el porcentaje relativo de cada categoría, utilizando `..count../sum(..count..)*100`. 
+
+Así, la función `geom_text(stat = "count", aes(label = paste0(round(..count../sum(..count..)*100, 1), "%")))` muestra sobre cada barra el porcentaje correspondiente, redondeado a un decimal y acompañado del símbolo “%”. Los demás parámetros (vjust = -0.5 y size = 4) ajustan la posición y tamaño del texto para que sea legible. De esta manera, el gráfico no solo muestra la frecuencia absoluta de los casos por sexo, sino también la proporción relativa que representa cada grupo, lo cual facilita comparar visualmente la distribución de los casos entre hombres y mujeres.
+
+### Boxplot
+
+```{r}
+# Boxplot simple
+boxplot(datos$Edad, main = "Boxplot de la Edad", ylab = "Edad")
+
+# Paso 1: Calcular los cuantiles (percentiles) de interés
+# - probs = c(0, 0.25, 0.5, 0.75, 1): especifica los percentiles a calcular (mínimo, Q1, mediana, Q3, máximo)
+# - na.rm = TRUE: ignora los valores NA en el cálculo
+
+# color = "black",     # Color del borde del boxplot
+# width = 0.5,         # Ancho del boxplot
+# fill = "#3498DB"     # Color de relleno (azul)
+# geom_boxplot: Crear el gráfico boxplot con ggplot2
+# annotate: Añadir anotaciones con los valores de Q1, mediana y Q3
+
+# Boxplot con anotaciones (cuantiles Q1, Mediana, Q3)
+q <- quantile(datos$Edad, probs = c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE)
+ggplot(datos, aes(y = Edad)) +
+  geom_boxplot(color = "black", width = 0.5, fill = "#3498DB") +
+  annotate("text", x = 1.2, y = q[2], label = paste0("Q1: ", q[2]), hjust = 1) +
+  annotate("text", x = 1.2, y = q[3], label = paste0("Mediana: ", q[3]), hjust = 1) +
+  annotate("text", x = 1.2, y = q[4], label = paste0("Q3: ", q[4]), hjust = 1) +
+  labs(title = "Distribución de la edad con anotaciones", y = "Edad (años)") +
+  theme_minimal()
+
+# Boxplot por sexo
+ggplot(datos, aes(x = Sexo, y = Edad, fill = Sexo)) +
+  geom_boxplot(width = 0.2, color = "black") +
+  scale_fill_manual(values = c("Femenino" = "#AD46FF", "Masculino" = "#3498DB")) +
+  labs(title = "Distribución de la edad por sexo",
+       y = "Edad (años)", x = "Sexo") +
+  theme_minimal()
+```
+
+### Tablas descriptivas
+
+En esta sección se construye una tabla de frecuencias para la variable Estado. El código `datos %>% count(Estado)` cuenta el número de observaciones (casos) en cada categoría de la variable, generando la frecuencia absoluta. 
+
+Luego, con `mutate(pct = round(n/sum(n)*100, 1))`, se calcula la frecuencia relativa o porcentaje, dividiendo cada conteo entre el total de observaciones y multiplicando por 100; el resultado se redondea a un decimal. Esta tabla permite identificar cuántos y qué porcentaje de casos pertenecen a cada estado (por ejemplo, recuperado, fallecido, activo, etc.), facilitando un resumen general de la situación de los casos de COVID-19.
+
+```{r}
+datos %>%
+  count(Estado) %>%                        # Frecuencia absoluta
+  mutate(pct = round(n/sum(n)*100, 1))     # Frecuencia relativa (%)
+
+datos %>%
+  count(Sexo, Estado) %>%                  # Conteo combinado
+  group_by(Sexo) %>%
+  mutate(pct = round(n/sum(n)*100, 1))     # Porcentaje por sexo
+```
+
+En esta parte se genera una tabla resumen automática con el paquete gtsummary. Primero, se define el estilo visual mediante `theme_gtsummary_journal(journal = "jama")`. Luego, con `select(Edad, Sexo, Tipo, Departamento, Estado)`, se eligen las variables de interés.
+
+La función `tbl_summary()` produce la tabla descriptiva, donde se especifican los estadísticos que se mostrarán para las variables numéricas: la media y desviación estándar, la mediana con el rango intercuartílico (p25–p75) y los valores mínimo y máximo. Con el argumento `type = all_continuous() ~ "continuous2"` se establece que las variables numéricas se traten como continuas. Esta tabla permite tener una visión general y resumida de las características principales de los casos analizados.
+
+```{r}
+theme_gtsummary_journal(journal = "jama")
+
+datos %>%
+  select(Edad, Sexo, Tipo, Departamento, Estado) %>% # Selecciona solo las columnas de interés para la tabla resumen:
+  tbl_summary( # GENERACIÓN DE TABLA RESUMEN
+    statistic = all_continuous() ~ c(
+      "{mean} ({sd})",         # Media y desviación estándar
+      "{median} ({p25}, {p75})",# Mediana y rango intercuartílico
+      "{min}, {max}"            # Mínimo y máximo
+    ),
+    type = all_continuous() ~ "continuous2"
+  )
+
+datos %>%
+  select(Edad, Sexo, Tipo, Departamento, Estado) %>%
+  tbl_summary(
+    by = Sexo, # Desagregado por el Sexo
+    statistic = all_continuous() ~ c(
+      "{mean} ({sd})", "{median} ({p25}, {p75})", "{min}, {max}"
+    ),
+    type = all_continuous() ~ "continuous2"
+  )
+```
+

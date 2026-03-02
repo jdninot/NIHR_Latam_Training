@@ -1,0 +1,600 @@
+---
+title: "Sesion 4: Manejo de bases de datos parte 2"
+author: "David Niño"
+format:
+  html:
+        code-fold: false 
+        code-tools: false
+        code-overflow: wrap
+     
+        theme: Cosmo
+        
+        self-contained: true
+        
+        toc: true
+        toc-title: Contento
+editor: visual
+---
+
+# Manejo de bases de datos
+
+## Objetivo de la sesión
+
+El objetivo de esta sesión es desarrollar las competencias necesarias para la importación, exportación, limpieza y preparación de datos. Se abordarán aspectos fundamentales: como cargar de archivos, creación de variables, selección y cambio de nombres de variables, aplicación de filtros, identificación de duplicados y detección de valores atípicos, entre otros.
+
+## Importación y exportación de archivos en R
+
+![](https://www.r4epi.com/chapters/importing_plain_text/files.png){fig-align="center"}
+
+Para analizar datos reales, es fundamental saber cómo importarlos desde archivos externos. R ofrece múltiples formas de hacerlo, siendo las más comunes las funciones de los paquetes `readxl`, `rio`, y `readr`, entre otros. Estas funciones permiten importar datos desde archivos como .csv, .xlsx, .txt, entre muchos otros formatos.
+
+::: callout-important
+#### Importante
+
+[Requiere que el archivo esté en tu directorio de trabajo o que especifiques la ruta completa.]{style="color:darkred;"} El directorio de trabajo es la carpeta predeterminada en tu computadora desde la cual R leerá y guardará archivos si no le das una ruta completa.
+:::
+
+-   Usa `getwd()` para verificar en qué carpeta estás trabajando actualmente.
+
+-   Usa `setwd("ruta/a/tu/carpeta")` para cambiar el directorio de trabajo, si no estás usando un proyecto de RStudio.
+
+También puedes arrastrar y soltar un archivo directamente al script o consola de RStudio para obtener su ruta completa.
+
+### Defunciones no Fetales 2023
+
+Las estadísticas de defunciones no fetales se producen a partir de la información proveniente de los certificados de defunción, la cual se acopia y consolida por las diferentes subdivisiones geográficas (departamentos, municipios y áreas) y por los diferentes grupos de población en el territorio nacional.
+
+Las bases de datos de defunciones, permiten obtener información por sexo, edad, causas de defunción, según departamento y municipio de ocurrencia de la defunción, así como departamento y municipio de residencia del fallecido; la cual se constituye en fuente básica para la construcción de indicadores en salud como tasa de mortalidad infantil, razón de mortalidad materna, tasas específicas por causas de muerte (enfermedades transmisibles, infecciosas, crónicas, muertes por causa externa etc.)., para la formulación y evaluación de políticas, planes y programas de salud pública especialmente.
+
+##### Tabla de variables del conjunto de datos de defunciones
+
+| **Variable**     | **Descripción**                                   |
+|------------------|---------------------------------------------------|
+| `COD_DPTO`       | Departamento donde ocurrió la defunción           |
+| `COD_MUNIC`      | Municipio donde ocurrió la defunción              |
+| `A_DEFUN`        | Área donde ocurrió la defunción                   |
+| `SIT_DEFUN`      | Sitio donde ocurrió la defunción                  |
+| `OTRSITIODE`     | Otro sitio, ¿cuál?                                |
+| `TIPO_DEFUN`     | Tipo de defunción                                 |
+| `ANO`            | Año en que ocurrió la defunción                   |
+| `MES`            | Mes en que ocurrió la defunción                   |
+| `HORA`           | Hora en que ocurrió la defunción                  |
+| `MINUTOS`        | Minutos en que ocurrió la defunción               |
+| `SEXO`           | Sexo del fallecido                                |
+| `EST_CIVIL`      | Estado conyugal del fallecido                     |
+| `GRU_ED1`        | Agrupación de edades (versión 1) del fallecido    |
+| `GRU_ED2`        | Agrupación de edades (versión 2) del fallecido    |
+| `NIVEL_EDU`      | Último nivel educativo aprobado del fallecido     |
+| `ULTCURFAL`      | Último año o grado aprobado del fallecido         |
+| `MUERTEPORO`     | Ocupación asociada con la causa de defunción      |
+| `SIMUERTEPO`     | Accidente de trabajo o enfermedad profesional     |
+| `OCUPACION`      | Última ocupación habitual del fallecido           |
+| `IDPERTET`       | Autoidentificación étnica del fallecido           |
+| `CODPRES`        | País de residencia habitual (si no era Colombia)  |
+| `CODPTORE`       | Departamento de residencia habitual del fallecido |
+| `CODMUNRE`       | Municipio de residencia habitual del fallecido    |
+| `AREA_RES`       | Área de residencia habitual del fallecido         |
+| `SEG_SOCIAL`     | Régimen de seguridad social del fallecido         |
+| `IDADMISALUD`    | Entidad Administradora de Salud                   |
+| `P_PMAN_IRIS`    | Probable manera de muerte                         |
+| `CONS_EXP`       | Certificado de defunción expedido por             |
+| `MU_PARTO`       | Muerte relacionada con el parto                   |
+| `T_PARTO`        | Tipo de parto                                     |
+| `TIPO_EMB`       | Multiplicidad del embarazo                        |
+| `T_GES`          | Semanas de gestación                              |
+| `T_GES_AGRU_CIE` | Tiempo de gestación agrupado según CIE            |
+| `PESO_NAC`       | Peso al nacer del feto o menor                    |
+| `EDAD_MADRE`     | Edad de la madre                                  |
+| `N_HIJOSV`       | Número de hijos nacidos vivos de la madre         |
+| `N_HIJOSM`       | Número de hijos nacidos muertos de la madre       |
+| `EST_CIVM`       | Estado conyugal de la madre                       |
+| `NIV_EDUM`       | Nivel educativo de la madre                       |
+| `ULTCURMAD`      | Último año o grado aprobado por la madre          |
+| `EMB_FAL`        | ¿Estaba embarazada cuando falleció?               |
+| `EMB_SEM`        | ¿Estuvo embarazada en las últimas 6 semanas?      |
+| `EMB_MES`        | ¿Estuvo embarazada en los últimos 12 meses?       |
+| `CODOCUR`        | Departamento del hecho (si fue muerte violenta)   |
+| `CODMUNOC`       | Municipio del hecho (si fue muerte violenta)      |
+| `C_MUERTE`       | Causa de muerte - Campo A                         |
+| `C_MUERTEB`      | Causa de muerte - Campo B                         |
+| `C_MUERTEC`      | Causa de muerte - Campo C                         |
+| `C_MUERTED`      | Causa de muerte - Campo D                         |
+| `C_MUERTEE`      | Causa de muerte - Campo E                         |
+| `C_MUERTEF`      | Causa de muerte - Campo F                         |
+| `C_MUERTEG`      | Causa de muerte - Campo G                         |
+| `ASIS_MED`       | Recibió asistencia médica antes de fallecer       |
+| `CAUSA_MULT`     | Códigos de causas múltiples antecedentes          |
+| `C_BAS1`         | Código de la causa básica de la defunción         |
+| `CAUSA_667`      | Causa agrupada (Lista 6/67 - OPS, CIE-10)         |
+| `IDPROFCER`      | Profesión de quien certificó la defunción         |
+| `CAU_HOMOL`      | Causa básica agrupada (Lista 105 - Colombia)      |
+| `TIPOFORMULARIO` | Fuente del certificado                            |
+
+### Uso de `rio` como alternativa para cargar datos
+
+El paquete `rio` permite importar múltiples tipos de archivos (.csv, .xlsx, .sav, etc.) con una sola función: `import()`.
+
+```{r}
+if (!require("rio")) {
+  install.packages("rio")
+  library(rio)
+} else {
+  library(rio)
+}
+```
+
+```{r}
+library(rio)
+
+# Cargar un archivo .csv
+datos <- import("BD-EEVV-Defuncionesnofetales-2023.csv")
+
+# Ver el contenido
+head(datos)
+```
+
+## ¿Qué es `tidyverse`?
+
+`tidyverse` es una colección de paquetes de código abierto para el lenguaje R, desarrollada por Hadley Wickham y su equipo, que comparten una misma filosofía de diseño, gramática y estructuras de datos partiendo del concepto de tidy data o datos ordenados [`https://www.tidyverse.org/`](https://www.tidyverse.org/)
+
+Esto permite un flujo de trabajo homogéneo y coherente: lo que entra es un tibble o data frame ordenado, lo que sale también es otro en la misma forma, y se pueden encadenar funciones fácilmente.
+
+![](https://miro.medium.com/max/4032/1*B-cwhqnFgGIbd9lWnzi_mQ.png){fig-align="center"}
+
+| Etapa del flujo de datos | Paquetes principales | Función principal |
+|------------------------|------------------------|------------------------|
+| **Importación** | `readr`, `readxl`, `haven`, `googledrive`, `rvest`, `jsonlite`, `googlesheets4`, `xml2` | Leer datos desde múltiples fuentes: archivos CSV, Excel, SPSS, APIs, HTML, JSON, Google Sheets, etc. |
+| **Limpieza / Tidying** | `tidyr` | Transformar datos en formato "tidy": cada fila es una observación, cada columna una variable. |
+| **Manipulación de datos** | `dplyr` | Filtrar, seleccionar, ordenar, crear variables, agrupar y resumir datos usando verbos como `filter()`, `select()`, `mutate()`, `arrange()`, `group_by()`, `summarise()`. |
+| **Tablas modernas** | `tibble` | Reemplaza a `data.frame` con mejor formato, impresión limpia y mayor consistencia. |
+| **Programación funcional / Pipes** | `purrr`, `magrittr`, `glue` | Simplificar operaciones repetitivas con `map()` y encadenar funciones con `%>%`, además de manejar cadenas con `glue()`. |
+| **Visualización** | `ggplot2` | Crear gráficos poderosos y personalizables usando la gramática de los gráficos. |
+| **Texto y cadenas** | `stringr` | Manipulación de texto con funciones intuitivas que manejan coherentemente valores vacíos o NA. |
+| **Variables categóricas** | `forcats` | Reordenar, recodificar y visualizar factores de manera eficiente. |
+| **Fechas y tiempos** | `lubridate`, `hms` | Parsear, crear y manipular fechas, horas y tiempos del día de forma intuitiva. |
+| **Modelado y evaluación** | `broom`, `modelr`, `recipes`, `tidymodels`, `yardstick`, `infer`, `dials` | Construir modelos, limpiar salidas y evaluar resultados de forma consistente. |
+| **Backends eficientes** | `dbplyr`, `dtplyr` | Ejecutar operaciones `dplyr` directamente sobre bases de datos SQL o tablas `data.table` para mayor eficiencia. |
+| **Ejemplificación / entorno** | `reprex`, `rlang`, `rstudioapi` | Crear ejemplos reproducibles, facilitar interacción con RStudio y programación avanzada. |
+
+```{r}
+#| warning: false
+library(tidyverse)
+```
+
+## Manipulación de datos `dplyr`:
+
+`dplyr` es un potente paquete para la manipulación de datos que proporciona un conjunto coherente de comandos que ayudan a limpiar y preparar los datos para el análisis. Operaciones como filtrar (`filter()`), organizar (`arrange()`), seleccionar (`select()`) y resumir (`summarise()`) se vuelven intuitivas y eficientes.
+
+#### Seleccionar variables `select()`
+
+Su propósito principal es seleccionar, reordenar y/o renombrar columnas específicas (variables) de un `data.frame` o `tibble`.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis <- datos %>% select(COD_DPTO,
+                                   COD_MUNIC,
+                                   A_DEFUN,
+                                   SEXO,
+                                   GRU_ED2,
+                                   NIVEL_EDU,
+                                   CAUSA_667,
+                                   SIMUERTEPO,
+                                   EMB_FAL)
+```
+
+```{r}
+str(datos_analisis)
+```
+
+#### Resumen de datos `skim()`
+
+`skim()` proporcionar rápidamente una descripción general amplia de un marco de datos.
+
+```{r}
+library(skimr)
+```
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+skim(datos_analisis)
+```
+
+### Datos faltantes `naniar`
+
+`naniar` es una libreria que proporciona métodos claros y ordenados para resumir, visualizar y manipular datos faltantes.
+
+```{r}
+library(naniar)
+```
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis %>% miss_var_summary()
+datos_analisis %>% gg_miss_var(show_pct = TRUE)
+```
+
+### Eliminar variables `select()`
+
+Cuando se usa `select()`, normalmente se seleccionan columnas. Pero si se pone un signo menos (-) delante del nombre de una columna, se está indicando que no se quiere esa columna, es decir, que se elimine.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis <- datos_analisis %>% select(-SIMUERTEPO, -EMB_FAL)
+```
+
+```{r}
+str(datos_analisis)
+```
+
+**Tarea**
+
+Buscar:
+
+-   Media (promedio aritmético): suma de todos los valores dividida entre el número de observaciones. Es sensible a valores extremos (outliers).
+
+-   Mediana: valor central cuando los datos están ordenados. Si el número de observaciones es par, es el promedio de los dos valores del centro. Es más robusta frente a valores atípicos que la media.
+
+-   p0: el valor mínimo.
+
+-   p25 (1er cuartil, Q1): el valor por debajo del cual se encuentra el 25% de los datos.
+
+-   p50 (2do cuartil, Q2): equivale a la mediana (50% de los datos quedan por debajo y 50% por encima).
+
+-   p75 (3er cuartil, Q3): el valor por debajo del cual se encuentra el 75% de los datos.
+
+-   p100: el valor máximo.
+
+### Renombrar variables `rename()`
+
+Renombrar columnas manualmente es una práctica útil para estandarizar los nombres de las variables y hacerlos más claros y comprensibles. La función `rename()` se utiliza para renombrar columnas dentro de una estructura de datos, como un dataframe.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis <- datos_analisis %>% rename(
+  codigo_departamento = COD_DPTO,
+  codigo_municipio    = COD_MUNIC,
+  area_defuncion      = A_DEFUN,
+  sexo                = SEXO,
+  grupo_edad          = GRU_ED2,
+  nivel_educativo     = NIVEL_EDU,
+  causa_muerte_667    = CAUSA_667
+)
+```
+
+```{r}
+str(datos_analisis)
+```
+
+### Poner etiquetas `factor()`
+
+La función `factor()` se utiliza para convertir variables en factores. En este caso, se usará para asignarles etiquetas legibles en lugar de valores numéricos.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+Convertir area_defuncion en factor
+
+```{r}
+datos_analisis$area_defuncion <- factor(datos_analisis$area_defuncion,
+                                        levels = c(1, 2, 3, 9),
+                                        labels = c("Cabecera municipal",
+                                                   "Centro poblado (Inspección, corregimiento o caserío)",
+                                                   "Rural disperso",
+                                                   "Sin información"))
+head(datos_analisis)
+```
+
+Convertir sexo en factor
+
+```{r}
+#| code-fold: true
+datos_analisis$sexo <- factor(datos_analisis$sexo,
+                              levels = c(1, 2, 3),
+                              labels = c("Masculino", "Femenino", "Indeterminado"))
+head(datos_analisis)
+```
+
+Convertir grupo_edad en factor
+
+```{r}
+datos_analisis$grupo_edad <- factor(datos_analisis$grupo_edad,
+                                    levels = c(1, 2, 3, 4, 5, 6, 7),
+                                    labels = c("Menor de 1 año",
+                                               "De 1 a 4 aos",
+                                               "De 5 a 14 aos",
+                                               "De 15 a 44 aos",
+                                               "De 45 a 64 aos",
+                                               "De 65 y más aos",
+                                               "Edad desconocida"), 
+                                    ordered = TRUE)
+head(datos_analisis)
+```
+
+Convertir nivel_educativo en factor
+
+```{r}
+datos_analisis$nivel_educativo <- factor(datos_analisis$nivel_educativo,
+                                         levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 99),
+                                         labels = c("Preescolar",
+                                                    "Básica primaria",
+                                                    "Básica secundaria",
+                                                    "Media académica o clásica",
+                                                    "Media técnica",
+                                                    "Normalista",
+                                                    "Técnica profesional",
+                                                    "Tecnológica",
+                                                    "Profesional",
+                                                    "Especialización",
+                                                    "Maestría",
+                                                    "Doctorado",
+                                                    "Ninguno",
+                                                    "Sin información"), 
+                                    ordered = TRUE)
+head(datos_analisis)
+```
+
+```{r}
+str(datos_analisis)
+```
+
+**Resumen de datos `skim()`**
+
+```{r}
+skim(datos_analisis)
+```
+
+### Remplazar texto `gsub()`
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis$grupo_edad <- gsub("aos", "años", datos_analisis$grupo_edad)
+head(datos_analisis$grupo_edad)
+```
+
+### Filtrar datos `filter()`
+
+La función`filter()` se utiliza para crear un subconjunto de un marco de datos, conservando todas las filas que satisfacen sus condiciones.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis_m <- datos_analisis %>% filter(sexo == "Masculino")
+datos_analisis_f <- datos_analisis %>% filter(sexo == "Femenino")
+```
+
+```{r}
+head(datos_analisis_f)
+```
+
+```{r}
+head(datos_analisis_m)
+```
+
+Existen varios conectores lógicos para filtrar datos en R dentro de la función `filter()`: el operador `&` selecciona los casos donde ambas condiciones son verdaderas (Y lógico), `|` selecciona los casos donde al menos una de las condiciones es verdadera (O lógico), y `!` niega una condición, seleccionando los casos donde la condición es falsa (no lógico). Estos conectores permiten realizar filtrados más complejos y específicos en función de múltiples criterios.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+Selecciona las filas donde la variable `sexo` sea "Femenino" o "Masculino".
+
+```{r}
+datos_analisis_f_m <- datos_analisis %>% filter(sexo == "Femenino" | sexo == "Masculino")
+head(datos_analisis_f_m)
+```
+
+Selecciona las filas donde la variable `sexo` sea "Femenino" y la variable `area_defuncion` sea "Cabecera municipal".
+
+```{r}
+datos_analisis_f_cm <- datos_analisis %>% filter(sexo == "Femenino" & area_defuncion == "Cabecera municipal")
+head(datos_analisis_f_cm)
+```
+
+Selecciona las filas donde el `sexo` no sea "Femenino" y el area_defuncion sea "Cabecera municipal".
+
+```{r}
+datos_analisis_mi_cm <- datos_analisis %>% filter(sexo != "Femenino" & area_defuncion == "Cabecera municipal")
+head(datos_analisis_mi_cm)
+```
+
+### Agrupar datos y resumirlos `group_by()` y `summarise()`
+
+`group_by()` agrupa los datos según una o más variables, y `summarise()` resume cada grupo aplicando funciones como conteo, promedio o suma.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+Calcula el total de casos por grupo y el porcentaje respecto al total general usando.
+
+```{r}
+datos_analisis %>%
+  select(sexo) %>% 
+  group_by(sexo) %>%
+  summarise(total = n(), porcentaje = (n() / nrow(datos_analisis)) * 100)
+```
+
+### Agregar columnas `mutate()`
+
+`mutate()` crea nuevas columnas que son funciones de variables existentes. También puede modificar (si el nombre coincide con el de una columna existente) y eliminar columnas (estableciendo su valor en NULL). Y `relocate()` mueve la columna id al primer lugar del dataframe.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+Esto agrega una nueva columna llamada id con un número consecutivo para cada fila, empezando desde 1.
+
+```{r}
+datos_analisis <- datos_analisis %>% 
+  mutate(id = row_number()) %>% 
+  relocate(id, .before = 1)
+```
+
+```{r}
+head(datos_analisis)
+```
+
+### Ordenar filas `arrange()`
+
+`arrange()` ordena las filas de un marco de datos según los valores de las columnas seleccionadas.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_ordenados <- datos_analisis %>%
+  arrange(desc(codigo_municipio))
+```
+
+```{r}
+head(datos_ordenados)
+```
+
+### Datos duplicados `distinct()`
+
+`distinct()` permite mantener únicamente filas únicas en un marco de datos.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+# Creamos un data frame con filas duplicadas
+df <- data.frame(
+  nombre = c("Ana", "Luis", "Ana", "Pedro", "Luis"),
+  edad   = c(23, 30, 23, 40, 30),
+  ciudad = c("Bogotá", "Medellín", "Bogotá", "Cali", "Medellín")
+)
+
+# Ver los datos originales
+df
+
+# Eliminar duplicados considerando todas las columnas
+df_unico <- df %>%
+  distinct()
+
+df_unico
+```
+
+### Condicionadores `case_when()`
+
+`case_when()` permite crear variables basadas en condiciones lógicas
+
+![](https://www.luisllamas.es/images/20096/programacion-condicional-sencillo.png){fig-align="center"}
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+-   Ese bloque de código utiliza la función `case_when()` dentro de `mutate()` para crear una nueva variable llamada `grupo_edad_cat`, que reagrupa las categorías originales de `grupo_edad` en intervalos más amplios de interés analítico.
+
+-   En este caso, todas las personas clasificadas como “Menor de 1 año”, “De 1 a 4 años” y “De 5 a 14 años” se asignan al grupo **“Menores de 15 años”**;
+
+-   quienes están entre “De 15 a 44 años” y “De 45 a 64 años” se agrupan como **“Adultos 15–64”**; los que figuran en “De 65 y más años” pasan a ser **“Adultos mayores 65+”**;
+
+-   y la categoría “Edad desconocida” se conserva como **“Desconocido”**.
+
+-   Además, se incluye un `TRUE ~ NA_character_` que funciona como un caso por defecto, asignando un valor faltante en caso de que aparezca alguna categoría inesperada. Con esto, el conjunto de edades queda simplificado en cuatro grandes grupos demográficos listos para análisis posteriores.
+
+```{r}
+# Condicionadores case_when()
+datos_analisis <- datos_analisis %>%
+  mutate(
+    grupo_edad_cat = case_when(
+      grupo_edad %in% c("Menor de 1 año", "De 1 a 4 años", "De 5 a 14 años") ~ "Menores de 15 años",
+      grupo_edad %in% c("De 15 a 44 años", "De 45 a 64 años") ~ "Adultos 15-64",
+      grupo_edad %in% c("De 65 y más años") ~ "Adultos mayores 65+",
+      grupo_edad %in% c("Edad desconocida") ~ "Desconocido",
+      TRUE ~ NA_character_   # por si aparece algo inesperado
+    )
+  )
+
+head(datos_analisis)
+```
+
+```{r}
+# install.packages("fastDummies")
+library(fastDummies)
+
+# Simular una base de datos
+set.seed(123)
+n <- 10
+estrato <- sample(0:5, n, replace = TRUE)
+datos <- data.frame(id = 1:n, estrato = estrato)
+
+# Crear dummies rápido
+# dummy_cols() crea columnas binarias (0/1) para cada categoría
+# remove_selected_columns = TRUE elimina la variable categórica original
+# remove_first_dummy = FALSE mantiene todas las dummies (no elimina ninguna)
+datos_dummies <- dummy_cols(datos, select_columns = "estrato", remove_first_dummy = FALSE, remove_selected_columns = TRUE)
+
+datos_dummies
+```
+
+Queremos confirmar que en cada fila solo haya un "1"
+
+```{r}
+# Queremos confirmar que en cada fila solo haya un "1"
+
+# apply(X, MARGIN, FUN):
+# - X: el data frame o matriz
+# - MARGIN = 1: aplicar función por filas (si fuera 2 sería por columnas)
+# - FUN = sum: sumar los valores en cada fila
+
+# Sumar valores por fila (solo columnas dummy)
+row_sums <- apply(datos_dummies[ , -1], 1, sum)  # Quitamos la columna i
+
+# Verificar que todas las filas sumen 1
+all(row_sums == 1)
+```
+
+```{r}
+# Reconstruir la variable estrato
+datos_recuperados <- datos_dummies %>%
+  mutate(
+    estrato = case_when(
+      estrato_1 == 1 ~ 1,
+      estrato_2 == 1 ~ 2,
+      estrato_3 == 1 ~ 3,
+      estrato_4 == 1 ~ 4,
+      estrato_5 == 1 ~ 5
+    )
+  )
+head(datos_recuperados)
+```
+
+### Tasa de Mortalidad
+
+$$
+TM = \left(\frac{D}{P}\right) \times 1000
+$$ Donde:
+
+-   TM: Tasa de mortalidad (por 1000 habitantes)
+-   D: Número de defunciones en el grupo analizado
+-   P: Población total del grupo analizado
+
+*group_by(sexo)* agrupa los registros por la variable sexo (por ejemplo, hombres y mujeres).
+
+*summarise(defunciones = n())* cuenta cuántos registros (defunciones) hay en cada grupo.
+
+```{r}
+# Conteo de defunciones por sexo
+conteo_defunciones <- datos_analisis %>%
+  group_by(sexo) %>%
+  summarise(defunciones = n())
+conteo_defunciones
+```
+
+Asignar población "inventada" para cada sexo (para el ejemplo educativo)
+
+*sample(20000000:30000000, n())* genera números aleatorios entre 20 y 30 millones (población ficticia).
+
+*mutate(poblacion = ...)* añade esta columna de población a la tabla.
+
+```{r}
+conteo_defunciones <- conteo_defunciones %>%
+  mutate(poblacion = sample(20000000:30000000, n()))
+conteo_defunciones
+```
+
+Calcular la tasa de mortalidad por 1000 habitantes
+
+```{r}
+# Calcular tasa de mortalidad por 1000 habitantes
+conteo_defunciones %>%
+  mutate(tasa_mortalidad = (defunciones / poblacion) * 1000)
+```
