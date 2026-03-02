@@ -1,0 +1,351 @@
+---
+title: "Sesion 3: Manejo de bases de datos - Parte 1"
+author: "David Niño"
+format:
+  html:
+        code-fold: false 
+        code-tools: false
+        code-overflow: wrap
+     
+        theme: Cosmo
+        
+        self-contained: true
+        
+        toc: true
+        toc-title: Contento
+editor: visual
+---
+
+# Manejo de bases de datos
+
+## Objetivo de la sesión
+
+El objetivo de esta sesión es desarrollar las competencias necesarias para la importación, exportación, limpieza y preparación de datos. Se abordarán aspectos fundamentales: como cargar de archivos, creación de variables, selección y cambio de nombres de variables, aplicación de filtros, identificación de duplicados y detección de valores atípicos, entre otros.
+
+## Data Frames (marco de datos o estructura de datos tabular)
+
+### Marco de datos: `data.frame()`
+
+Los data frames son, posiblemente, la estructura de datos más importante en R para el análisis de datos. Piensen en ellos como hojas de cálculo o tablas de bases de datos, donde cada columna puede contener un tipo de dato diferente (por Ejemplos, una columna puede ser numérica, otra de texto y otra lógica). Cada fila representa una observación.
+
+![](https://pynative.com/wp-content/uploads/2021/02/dataframe-1024x553.png){fig-align="center" width="530"}
+
+[**Creación:**]{style="color:darkred;"}
+
+Se crea usando la función `data.frame()`.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+-   Forma 1 de ingresar datos a un `data.frame():` Dentro del objeto se ingresan directamente las columnas.
+
+```{r}
+# Se crea un data frame llamado 'datos_encuesta' con 4 filas y 5 columnas
+datos_encuesta <- data.frame(
+  id = 1:4,  # Columna 'id' con números del 1 al 4 (identificadores únicos para cada fila)
+  fecha = seq(as.Date("2023-01-01"), by = "month", length.out = 4), # Columna 'fecha' con una secuencia de fechas mensuales a partir del 1 de enero de 2023
+  genero = c("M", "F", "F", "M"), # Columna 'sexo' con los valores "M" (masculino) y "F" (femenino)
+  edad = c(34, 45, 29, 62), # Columna 'edad' con edades de las personas encuestadas
+  fumador = c(1, 0, 1, 0), # Columna 'fumador' con 1 = sí fuma, 0 = no fuma
+  percepcion = c("Alta", "Baja", "Media", "Alta") # percepcion
+)
+
+# Se muestra el contenido del data frame 'datos_encuesta' en consola
+datos_encuesta
+```
+
+-   Forma 2 de ingresar datos a un `data.frame():` Primero se crean los vectores y luego se incluyen en el objeto.
+
+```{r}
+id <-  1:4  # Columna 'id' con números del 1 al 4 (identificadores únicos para cada fila)
+fecha <-  seq(as.Date("2023-01-01"), by = "month", length.out = 4) # Columna 'fecha' con una secuencia de fechas mensuales a partir del 1 de enero de 2023
+genero <- c("M", "F", "F", "M") # Columna 'sexo' con los valores "M" (masculino) y "F" (femenino)
+edad <- c(34, 45, 29, 62) # Columna 'edad' con edades de las personas encuestadas
+fumador <- c(1, 0, 1, 0) # Columna 'fumador' con 1 = sí fuma, 0 = no fuma
+percepcion <- c("Alta", "Baja", "Media", "Alta") # percepcion
+
+# Se crea un data frame llamado 'datos_encuesta' con 4 filas y 5 columnas
+datos_encuesta <- data.frame(id, fecha, genero, fumador, percepcion)
+
+# Se muestra el contenido del data frame 'datos_encuesta' en consola
+datos_encuesta
+```
+
+### Estructura (Structure) `str()`
+
+`str()` es una función de diagnóstico que significa "estructura" y ofrece un resumen conciso de la estructura interna de un objeto en R. Es una herramienta clave para entender e inspeccionar objetos como vectores, listas, data frames, matrices y estructuras más complejas.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+# Se explora la estructura de los datos
+str(datos_encuesta)
+```
+
+Se trata de un data frame con 4 observaciones (filas) y 6 variables (columnas). Las variables incluyen:
+
+-   id: números enteros que identifican a cada individuo.
+-   fecha: fechas en formato "año-mes-día".
+-   genero: texto (character type) que indica el genero ("M" o "F").
+-   edad: números que representan la edad.
+-   fumador: números (1 o 0) que indican si la persona fuma (1 = sí, 0 = no).
+-   percepcion: texto (character type) que representa la percepción (como "Alta", "Media", "Baja").
+
+::: callout-tip
+##### [Tips]{style="color:darkgreen;"}
+
+En muchas ocasiones, es necesario asignar etiquetas comprensibles a las variables categóricas para facilitar su interpretación y análisis posterior. Usar nombres significativos para los niveles de los factores mejora la legibilidad de los resultados, especialmente en informes, visualizaciones y modelos estadísticos.
+:::
+
+::: callout-caution
+##### [Precaución]{style="color:darkred;"}
+
+En su defecto, se puede optar por mantener una codificación numérica o alfanumérica para las variables categóricas. Sin embargo, en estos casos es indispensable contar con un manual de códigos que documente claramente el significado de cada valor. Esto asegura la correcta interpretación de los datos durante el análisis y evita ambigüedades o errores en la lectura de los resultados.
+:::
+
+### Codificar un vector como factor `factor()`
+
+Los factores son un tipo especial de dato en R diseñado específicamente para manejar variables categóricas: aquellas que representan un número limitado de categorías o grupos, como el sexo, el estado civil, el nivel educativo, entre otros.
+
+A diferencia de los vectores de tipo character, los factores almacenan las categorías como niveles predefinidos, lo que permite un manejo más estructurado y eficiente, tanto en memoria como en análisis estadístico.
+
+**¿Por qué usar factores?**
+
+-   Permiten representar variables categóricas de forma estructurada.
+-   R puede interpretar automáticamente los niveles como categorías nominales o ordinales, dependiendo de cómo se definan.
+-   Modelos estadísticos (lm(), glm(), etc.), que tratan las variables categóricas de forma especial (creación automática de variables dummy).
+-   Visualización (ej. ggplot2), donde los factores determinan el orden y agrupamiento en los gráficos.
+-   Ahorro de memoria, especialmente cuando hay muchas repeticiones de las mismas categorías.
+
+[**Creación:**]{style="color:darkred;"}
+
+Se crea usando la función `factor()`.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+En este caso, la variable genero presenta los valores codificados como "F" y "M", lo cual puede resultar poco estético e informal. Para mejorar la claridad en los análisis, gráficos e informes, es recomendable reemplazar estas abreviaciones por etiquetas completas y descriptivas, como "Femenino" y "Masculino".
+
+```{r}
+datos_encuesta$genero <- factor(datos_encuesta$genero,
+                                levels = c("M", "F"),
+                                labels = c("Masculino", "Femenino"))
+str(datos_encuesta)
+```
+
+👉 Ahora la variable genero ha sido convertida en un factor con 2 niveles, cuyas etiquetas son "Masculino" y "Femenino"
+
+En variables como escalas de percepción (ej. Baja, Media, Alta), es útil especificar un orden lógico entre los niveles:
+
+```{r}
+datos_encuesta$percepcion <- factor(datos_encuesta$percepcion,
+                                    levels = c("Baja", "Media", "Alta"),
+                                    ordered = TRUE)
+str(datos_encuesta)
+```
+
+👉 Ahora la variable percepcion ha sido convertida en un factor ordenado con tres niveles, con etiquetas "Baja", "Media" y "Alta" organizados jerárquicamente.
+
+```{r}
+datos_encuesta$fumador <- factor(datos_encuesta$fumador,
+                                 levels = c(0, 1), labels = c("No", "Sí"))
+str(datos_encuesta)
+```
+
+👉 Ahora la variable fumador ha sido convertida en un factor con 2 niveles, cuyos valores son "Sí" y "No".
+
+## Importación y exportación de archivos en R
+
+![](https://www.r4epi.com/chapters/importing_plain_text/files.png){fig-align="center"}
+
+Para analizar datos reales, es fundamental saber cómo importarlos desde archivos externos. R ofrece múltiples formas de hacerlo, siendo las más comunes las funciones de los paquetes `readxl`, `rio`, y `readr`, entre otros. Estas funciones permiten importar datos desde archivos como .csv, .xlsx, .txt, entre muchos otros formatos.
+
+::: callout-important
+#### Importante
+
+[Requiere que el archivo esté en tu directorio de trabajo o que especifiques la ruta completa.]{style="color:darkred;"} El directorio de trabajo es la carpeta predeterminada en tu computadora desde la cual R leerá y guardará archivos si no le das una ruta completa.
+:::
+
+-   Usa `getwd()` para verificar en qué carpeta estás trabajando actualmente.
+
+-   Usa `setwd("ruta/a/tu/carpeta")` para cambiar el directorio de trabajo, si no estás usando un proyecto de RStudio.
+
+También puedes arrastrar y soltar un archivo directamente al script o consola de RStudio para obtener su ruta completa.
+
+### Defunciones no Fetales 2023
+
+Las estadísticas de defunciones no fetales se producen a partir de la información proveniente de los certificados de defunción, la cual se acopia y consolida por las diferentes subdivisiones geográficas (departamentos, municipios y áreas) y por los diferentes grupos de población en el territorio nacional.
+
+Las bases de datos de defunciones, permiten obtener información por sexo, edad, causas de defunción, según departamento y municipio de ocurrencia de la defunción, así como departamento y municipio de residencia del fallecido; la cual se constituye en fuente básica para la construcción de indicadores en salud como tasa de mortalidad infantil, razón de mortalidad materna, tasas específicas por causas de muerte (enfermedades transmisibles, infecciosas, crónicas, muertes por causa externa etc.)., para la formulación y evaluación de políticas, planes y programas de salud pública especialmente.
+
+##### Tabla de variables del conjunto de datos de defunciones
+
+| **Variable**     | **Descripción**                                   |
+|------------------|---------------------------------------------------|
+| `COD_DPTO`       | Departamento donde ocurrió la defunción           |
+| `COD_MUNIC`      | Municipio donde ocurrió la defunción              |
+| `A_DEFUN`        | Área donde ocurrió la defunción                   |
+| `SIT_DEFUN`      | Sitio donde ocurrió la defunción                  |
+| `OTRSITIODE`     | Otro sitio, ¿cuál?                                |
+| `TIPO_DEFUN`     | Tipo de defunción                                 |
+| `ANO`            | Año en que ocurrió la defunción                   |
+| `MES`            | Mes en que ocurrió la defunción                   |
+| `HORA`           | Hora en que ocurrió la defunción                  |
+| `MINUTOS`        | Minutos en que ocurrió la defunción               |
+| `SEXO`           | Sexo del fallecido                                |
+| `EST_CIVIL`      | Estado conyugal del fallecido                     |
+| `GRU_ED1`        | Agrupación de edades (versión 1) del fallecido    |
+| `GRU_ED2`        | Agrupación de edades (versión 2) del fallecido    |
+| `NIVEL_EDU`      | Último nivel educativo aprobado del fallecido     |
+| `ULTCURFAL`      | Último año o grado aprobado del fallecido         |
+| `MUERTEPORO`     | Ocupación asociada con la causa de defunción      |
+| `SIMUERTEPO`     | Accidente de trabajo o enfermedad profesional     |
+| `OCUPACION`      | Última ocupación habitual del fallecido           |
+| `IDPERTET`       | Autoidentificación étnica del fallecido           |
+| `CODPRES`        | País de residencia habitual (si no era Colombia)  |
+| `CODPTORE`       | Departamento de residencia habitual del fallecido |
+| `CODMUNRE`       | Municipio de residencia habitual del fallecido    |
+| `AREA_RES`       | Área de residencia habitual del fallecido         |
+| `SEG_SOCIAL`     | Régimen de seguridad social del fallecido         |
+| `IDADMISALUD`    | Entidad Administradora de Salud                   |
+| `P_PMAN_IRIS`    | Probable manera de muerte                         |
+| `CONS_EXP`       | Certificado de defunción expedido por             |
+| `MU_PARTO`       | Muerte relacionada con el parto                   |
+| `T_PARTO`        | Tipo de parto                                     |
+| `TIPO_EMB`       | Multiplicidad del embarazo                        |
+| `T_GES`          | Semanas de gestación                              |
+| `T_GES_AGRU_CIE` | Tiempo de gestación agrupado según CIE            |
+| `PESO_NAC`       | Peso al nacer del feto o menor                    |
+| `EDAD_MADRE`     | Edad de la madre                                  |
+| `N_HIJOSV`       | Número de hijos nacidos vivos de la madre         |
+| `N_HIJOSM`       | Número de hijos nacidos muertos de la madre       |
+| `EST_CIVM`       | Estado conyugal de la madre                       |
+| `NIV_EDUM`       | Nivel educativo de la madre                       |
+| `ULTCURMAD`      | Último año o grado aprobado por la madre          |
+| `EMB_FAL`        | ¿Estaba embarazada cuando falleció?               |
+| `EMB_SEM`        | ¿Estuvo embarazada en las últimas 6 semanas?      |
+| `EMB_MES`        | ¿Estuvo embarazada en los últimos 12 meses?       |
+| `CODOCUR`        | Departamento del hecho (si fue muerte violenta)   |
+| `CODMUNOC`       | Municipio del hecho (si fue muerte violenta)      |
+| `C_MUERTE`       | Causa de muerte - Campo A                         |
+| `C_MUERTEB`      | Causa de muerte - Campo B                         |
+| `C_MUERTEC`      | Causa de muerte - Campo C                         |
+| `C_MUERTED`      | Causa de muerte - Campo D                         |
+| `C_MUERTEE`      | Causa de muerte - Campo E                         |
+| `C_MUERTEF`      | Causa de muerte - Campo F                         |
+| `C_MUERTEG`      | Causa de muerte - Campo G                         |
+| `ASIS_MED`       | Recibió asistencia médica antes de fallecer       |
+| `CAUSA_MULT`     | Códigos de causas múltiples antecedentes          |
+| `C_BAS1`         | Código de la causa básica de la defunción         |
+| `CAUSA_667`      | Causa agrupada (Lista 6/67 - OPS, CIE-10)         |
+| `IDPROFCER`      | Profesión de quien certificó la defunción         |
+| `CAU_HOMOL`      | Causa básica agrupada (Lista 105 - Colombia)      |
+| `TIPOFORMULARIO` | Fuente del certificado                            |
+
+### Cargar datos en formato .csv
+
+```{r}
+# Cargar datos desde un archivo CSV ubicado en el mismo directorio de trabajo
+datos <- read.csv("BD-EEVV-Defuncionesnofetales-2023.csv")
+```
+
+### Inspeccionar y explorar el conjunto de datos.
+
+Estas funciones te proporcionan una exploración rápida de un conjunto de datos e identifican posibles problemas, como valores faltantes, variables mal codificadas o tipos de datos incorrectos.
+
+```{r}
+# Determinar las dimensiones de data.frame
+dim(datos)        # Dimensiones del data frame (filas y columnas)
+```
+
+```{r}
+# Muestra la estructura del objeto (tipos de variables, ejemplos de valores)
+str(datos)        
+```
+
+```{r}
+# Imprimir todo el contenido del data frame no es recomendado si hay muchas filas
+head(datos)       # Primeras 6 filas
+tail(datos)       # Últimas 6 filas
+```
+
+```{r}
+# Lista los nombres de las variables (columnas)
+names(datos)      # Lista los nombres de las variables (columnas)
+colnames(datos)   # Lista los nombres de las variables (columnas)
+```
+
+### Uso de `rio` como alternativa para cargar datos
+
+El paquete `rio` permite importar múltiples tipos de archivos (.csv, .xlsx, .sav, etc.) con una sola función: `import()`.
+
+```{r}
+if (!require("rio")) {
+  install.packages("rio")
+  library(rio)
+} else {
+  library(rio)
+}
+```
+
+```{r}
+library(rio)
+
+# Cargar un archivo .csv
+datos <- import("BD-EEVV-Defuncionesnofetales-2023.csv")
+
+# Ver el contenido
+head(datos)
+```
+
+## ¿Qué es `tidyverse`?
+
+`tidyverse` es una colección de paquetes de código abierto para el lenguaje R, desarrollada por Hadley Wickham y su equipo, que comparten una misma filosofía de diseño, gramática y estructuras de datos partiendo del concepto de tidy data o datos ordenados [`https://www.tidyverse.org/`](https://www.tidyverse.org/)
+
+Esto permite un flujo de trabajo homogéneo y coherente: lo que entra es un tibble o data frame ordenado, lo que sale también es otro en la misma forma, y se pueden encadenar funciones fácilmente.
+
+![](https://miro.medium.com/max/4032/1*B-cwhqnFgGIbd9lWnzi_mQ.png){fig-align="center"}
+
+| Etapa del flujo de datos | Paquetes principales | Función principal |
+|------------------------|------------------------|------------------------|
+| **Importación** | `readr`, `readxl`, `haven`, `googledrive`, `rvest`, `jsonlite`, `googlesheets4`, `xml2` | Leer datos desde múltiples fuentes: archivos CSV, Excel, SPSS, APIs, HTML, JSON, Google Sheets, etc. |
+| **Limpieza / Tidying** | `tidyr` | Transformar datos en formato "tidy": cada fila es una observación, cada columna una variable. |
+| **Manipulación de datos** | `dplyr` | Filtrar, seleccionar, ordenar, crear variables, agrupar y resumir datos usando verbos como `filter()`, `select()`, `mutate()`, `arrange()`, `group_by()`, `summarise()`. |
+| **Tablas modernas** | `tibble` | Reemplaza a `data.frame` con mejor formato, impresión limpia y mayor consistencia. |
+| **Programación funcional / Pipes** | `purrr`, `magrittr`, `glue` | Simplificar operaciones repetitivas con `map()` y encadenar funciones con `%>%`, además de manejar cadenas con `glue()`. |
+| **Visualización** | `ggplot2` | Crear gráficos poderosos y personalizables usando la gramática de los gráficos. |
+| **Texto y cadenas** | `stringr` | Manipulación de texto con funciones intuitivas que manejan coherentemente valores vacíos o NA. |
+| **Variables categóricas** | `forcats` | Reordenar, recodificar y visualizar factores de manera eficiente. |
+| **Fechas y tiempos** | `lubridate`, `hms` | Parsear, crear y manipular fechas, horas y tiempos del día de forma intuitiva. |
+| **Modelado y evaluación** | `broom`, `modelr`, `recipes`, `tidymodels`, `yardstick`, `infer`, `dials` | Construir modelos, limpiar salidas y evaluar resultados de forma consistente. |
+| **Backends eficientes** | `dbplyr`, `dtplyr` | Ejecutar operaciones `dplyr` directamente sobre bases de datos SQL o tablas `data.table` para mayor eficiencia. |
+| **Ejemplificación / entorno** | `reprex`, `rlang`, `rstudioapi` | Crear ejemplos reproducibles, facilitar interacción con RStudio y programación avanzada. |
+
+```{r}
+#| warning: false
+library(tidyverse)
+```
+
+## Manipulación de datos `dplyr`:
+
+`dplyr` es un potente paquete para la manipulación de datos que proporciona un conjunto coherente de comandos que ayudan a limpiar y preparar los datos para el análisis. Operaciones como filtrar (`filter()`), organizar (`arrange()`), seleccionar (`select()`) y resumir (`summarise()`) se vuelven intuitivas y eficientes.
+
+#### Seleccionar variables `select()`
+
+Su propósito principal es seleccionar, reordenar y/o renombrar columnas específicas (variables) de un `data.frame` o `tibble`.
+
+[**Ejemplos en R:**]{style="color:steelblue;"}
+
+```{r}
+datos_analisis <- datos %>% select(COD_DPTO,
+                                   COD_MUNIC,
+                                   A_DEFUN,
+                                   SEXO,
+                                   GRU_ED2,
+                                   NIVEL_EDU,
+                                   CAUSA_667,
+                                   SIMUERTEPO,
+                                   EMB_FAL)
+```
+
+```{r}
+str(datos_analisis)
+```

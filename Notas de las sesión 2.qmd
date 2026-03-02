@@ -1,0 +1,546 @@
+---
+title: "Sesion 1 y 2: Introducción a R"
+author: "David Niño"
+format:
+  html:
+        code-fold: false 
+        code-tools: false
+        code-overflow: wrap
+     
+        theme: Cosmo
+        
+        self-contained: true
+        
+        toc: true
+        toc-title: Contento
+
+        code-links:
+        - text: Codigo de la sesion 1 en R
+          icon: file-code
+          href: Codigo_S1.R
+        - text: Datos de la sesion 1
+          icon: file-code
+          href: BD-EEVV-Defuncionesnofetales-2023.csv
+editor: visual
+---
+
+# Introducción a R
+
+## Objetivo de la sesión
+
+El propósito de esta sesión es familiarizarse con el entorno de R y RStudio, comprender los tipos básicos de datos, los operadores matemáticos, y las estructuras de datos fundamentales como vectores, matrices.
+
+## Operaciones básicas
+
+En R se pueden realizar operaciones matemáticas básicas, muy similares a las que se harian con una calculadora. Estas operaciones son fundamentales para cualquier tipo de cálculo.
+
+Aquí hay algunas de las operaciones más comunes:
+
+-   **Suma (+):** Para combinar valores.
+-   **Resta (-):** Para encontrar la diferencia entre valores.
+-   **Multiplicación (\*)**: Para escalar valores.
+-   **División (/):** Para dividir un valor por otro.
+-   **Potencias (\^):** Para elevar un número a una potencia.
+-   **Raíz Cuadrada (sqrt()):** Una función para calcular la raíz cuadrada de un número.
+
+```{r}
+2 + 2       # Suma
+10 - 3      # Resta
+4 * 5       # Multiplicación
+8 / 2       # División
+2^3         # Potencias
+sqrt(16)    # Raíz cuadrada
+```
+
+El símbolo `<-` en **R** representa el **operador de asignación**.
+
+> Asigna un valor a un objeto (una variable, un vector, una función, etc.).
+
+```{r}
+nombre <- "david"
+nombre
+```
+
+## Tipos de datos básicos y estructuras de datos en R
+
+Para aprovechar al máximo el lenguaje R, es necesario tener una comprensión sólida de los tipos y estructuras de datos básicos, saber identificarlos y entender cómo operar con ellos. Comprender estas estructuras es fundamental, ya que son los objetos que manipularás a diario en R.
+
+### Numéricos
+
+Los datos numéricos representan valores cuantitativos. Pueden ser enteros (por ejemplo, número de hijos) o decimales (como estatura en metros o peso en kilogramos).
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Se usan para cualquier valor cuantitativo como edades, pesos, estaturas, resultados de mediciones, etc.
+:::
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+edad <- 25 # Asignamos un número entero a la variable 'edad'
+edad
+```
+
+La función `class()` en R se utiliza para obtener o establecer la clase de un objeto.
+
+```{r}
+peso <- 70.5      # Asignamos un número decimal (numérico)
+peso
+class(peso)       # Devuelve "numeric", indicando que es un número
+```
+
+**Calcular el índice de masa corporal (IMC)**
+
+El IMC es una fórmula médica que relaciona el peso con la estatura para evaluar el estado corporal de una persona.
+
+$$
+\text{IMC} = \frac{\text{peso (kg)}}{\left(\text{estatura (m)}\right)^2}
+$$
+
+```{r}
+peso <- 70          # Peso en kilogramos
+peso
+estatura <- 1.75    # Estatura en metros
+estatura
+IMC <- peso / estatura^2  # Fórmula: peso dividido entre estatura al cuadrado
+IMC                 # Mostramos el resultado
+```
+
+Un IMC entre 18.5 y 24.9 se considera peso normal o saludable.
+
+**Tasa de natalidad por 1000 habitantes:**
+
+Es un indicador demográfico que expresa la proporción de nacimientos vivos ocurridos en una población durante un periodo determinado (usualmente un año), por cada 1.000 habitantes.
+
+$$
+\text{Tasa de natalidad} = \left( \frac{\text{Número de nacimientos}}{\text{Población total}} \right) \times 1000
+$$
+
+```{r}
+nacimientos <- 512         # Número de nacimientos
+poblacion <- 20000         # Población total
+tasa_natalidad <- (nacimientos / poblacion) * 1000  # Fórmula
+tasa_natalidad              # Resultado de la tasa por mil
+```
+
+Significa que en un año, ocurrieron 25.6 nacimientos por cada 1,000 personas en la población.
+
+**Prevalencia**
+
+La prevalencia es una medida epidemiológica que indica la proporción de individuos en una población que presentan una enfermedad o condición específica en un momento determinado (prevalencia puntual) o durante un período de tiempo específico (prevalencia de periodo).
+
+$$
+\text{Prevalencia} = \left( \frac{\text{Casos existentes}}{\text{Población total}} \right) \times 100
+$$
+
+```{r}
+casos_existentes <- 340
+poblacion_total <- 5000
+prevalencia <- (casos_existentes / poblacion_total) * 100
+prevalencia
+```
+
+La prevalencia del 6.8% indica que, en el momento del estudio, 6.8 personas por cada 100 presentan la enfermedad.
+
+**Incidencia acumulada**
+
+La incidencia acumulada mide la proporción de personas que desarrollan una enfermedad nueva durante un periodo específico (por ejemplo, un año).
+
+$$
+\text{Incidencia acumulada} = \left( \frac{\text{Casos nuevos}}{\text{Población en riesgo}} \right) \times 100
+$$
+
+```{r}
+casos_nuevos <- 125
+poblacion_riesgo <- 4600
+
+# Cálculo
+incidencia <- (casos_nuevos / poblacion_riesgo) * 100
+incidencia
+```
+
+La incidencia acumulada de 2.71% indica que 2.71 personas por cada 100 en riesgo contrajeron la enfermedad en el período estudiado.
+
+**Tasa de mortalidad general**
+
+La tasa de mortalidad muestra la proporción de muertes en una población en un periodo especifico, por cada 1,000 habitantes.
+
+-   Muertes: 120
+-   Poblacion total: 20000
+
+$$
+\text{Tasa de mortalidad} = \left( \frac{\text{Muertes}}{\text{Población total}} \right) \times 1000
+$$
+
+```{r}
+muertes <- 120
+poblacion_total_mortalidad <- 20000
+
+# Cálculo
+tasa_mortalidad <- (muertes / poblacion_total_mortalidad) * 1000
+tasa_mortalidad
+```
+
+6 personas murieron por cada 1,000 habitantes en ese año.
+
+**Tasa de fecundidad general**
+
+La tasa de fecundidad general mide el número de nacimientos por cada 1,000 mujeres en edad fértil (usualmente 15 a 49 años), en un periodo especifico.
+
+-   Nacimientos: 512
+-   Mujeres fertiles: 5200
+
+$$
+\text{Tasa de fecundidad} = \left( \frac{\text{Nacimientos}}{\text{Mujeres de 15 a 49 años}} \right) \times 1000
+$$
+
+```{r}
+nacimientos <- 512
+mujeres_fertiles <- 5200
+
+# Cálculo
+tasa_fecundidad <- (nacimientos / mujeres_fertiles) * 1000
+tasa_fecundidad
+```
+
+En promedio, 98.46 nacimientos ocurrieron por cada 1,000 mujeres en edad fértil durante el año.
+
+**Tasa neta de migración**
+
+La tasa neta de migración es una medida que indica el efecto neto de la inmigración y la emigración en la población de un área, expresado como el aumento o la disminución por cada 1,000 habitantes durante en un periodo especifico.
+
+-   Número de inmigrantes: 350
+-   Número de emigrantes: 120
+-   Poblacion: 15000
+
+$$
+\text{Tasa de migración} = \left( \frac{\text{Inmigrantes} - \text{Emigrantes}}{\text{Población total}} \right) \times 1000
+$$
+
+```{r}
+inmigrantes <- 350
+emigrantes <- 120
+poblacion_total <- 15000
+
+# Cálculo
+tasa_migracion <- (inmigrantes - emigrantes) / poblacion_total * 1000
+tasa_migracion
+```
+
+En el período analizado, la población ganó 15.33 personas por cada 1,000 habitantes, debido a que llegaron más inmigrantes que emigrantes.
+
+### Caracteres (Strings)
+
+Representan texto. Pueden ser nombres, descripciones, categorías, etc. Siempre se escriben entre comillas (" o ").
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Se usan para información textual como nombres de pacientes, diagnósticos, etiquetas, etc.
+:::
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+nombre <- "Ana"
+nombre
+```
+
+```{r}
+nombre <- "Carlos"
+nombre
+diagnostico <- "Hipertensión"
+diagnostico
+class(nombre)   # Devuelve "character"
+```
+
+### Lógicos (Booleanos)
+
+Representan valores de verdad: TRUE (verdadero) o FALSE (falso). Son esenciales para tomar decisiones y filtrar datos.
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Se usan para indicar si una condición se cumple o no. Por Ejemplos, si un paciente tiene una enfermedad (TRUE) o no (FALSE), si un tratamiento fue efectivo, etc.
+:::
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+logico <- TRUE
+logico
+class(logico)  # "logical"
+```
+
+#### Valores faltantes
+
+También es importante identificar valores faltantes, que en R se representan con `NA`. La función `is.na()` se utiliza para identificar valores faltantes (NA) en un objeto.
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+nota <- NA           # Valor faltante
+nota
+is.na(nota)          # Devuelve TRUE si la variable contiene NA
+```
+
+### Vectores
+
+Un vector es una secuencia ordenada de elementos del mismo tipo de dato. Puede contener números, caracteres o valores lógicos, pero todos sus elementos deben ser del mismo tipo.
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Para almacenar colecciones de datos homogéneos, como una serie de edades de pacientes, los resultados de un test para varios individuos, etc.
+:::
+
+[Creación:]{style="color:darkred;"} Se crean usando la función `c()` (de "concatenar" o "combinar").
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+edades <- c(20, 25, 30, 35) # Un vector numérico con cuatro edades
+edades
+```
+
+```{r}
+x <- c(1, 2, NA, 4)
+is.na(x)
+```
+
+#### Operaciones directamente entre vectores
+
+R permite realizar operaciones directamente entre vectores de forma eficiente y concisa. Estas operaciones se realizan elemento a elemento, lo que significa que R aplicará la operación correspondiente entre los elementos que ocupan la misma posición en cada vector.
+
+Además de las operaciones aritméticas básicas (+, -, \*, /, \^), R también permite comparaciones (\<, \>, ==, etc.) y operaciones lógicas (&, \|) entre vectores
+
+```{r}
+a <- c(1, 2, 3)
+b <- c(4, 5, 6)
+
+a + b  # Suma elemento a elemento
+a - b  # Resta
+a * b  # Multiplicación
+a / b  # División
+```
+
+```{r}
+x <- c(1, 2, 3, 4)
+y <- c(10, 20)
+x + y  # Resultado: c(11, 22, 13, 24) con advertencia
+```
+
+```{r}
+sexo <- c("M", "F", "F")
+sexo == "F"  # ¿Es mujer?
+```
+
+```{r}
+peso <- c(70, 80, 65, 90)
+peso[peso > 70]  # Filtrar valores mayores a 70
+```
+
+```{r}
+edades <- c(23, 31, 45, 19, 30, 2)
+sum(edades)    # Suma total
+min(edades)    # Valor mínimo
+max(edades)    # Valor máximo
+```
+
+```{r}
+valores <- c(TRUE, TRUE, FALSE)
+all(valores)  # Devuelve FALSE
+any(valores)  # Devuelve TRUE
+```
+
+```{r}
+# Error
+# x <- 2
+# X
+```
+
+**Cálculo de incidencia estratificada por Sexo**
+
+La prevalencia de una enfermedad se calcula dividiendo el número total de los individuos que presentan un atributo o enfermedad en un momento o durante un periodo (evento)
+
+Para estimar la prevalencia de COVID-19 por sexo durante un periodo, usamos:
+
+$$
+\text{Prevalencia}_{\text{mujeres}} = \left( \frac{\text{Casos en mujeres}}{\text{Total mujeres}} \right) \times 100
+$$ 
+
+$$
+\text{Prevalencia}_{\text{hombres}} = \left( \frac{\text{Casos en hombres}}{\text{Total hombres}} \right) \times 100
+$$
+
+```{r}
+# Vector con el sexo de los individuos (M = masculino, F = femenino)
+sexo <- c("M", "F", "M", "F", "F", "M", "M", "F")
+sexo
+
+# Vector con los casos: 1 = tiene la condición, 0 = no tiene
+caso <- c(0, 1, 1, 0, 1, 0, 1, 0)  # 1 = enfermedad, 0 = sano
+caso
+```
+
+`cbind()` en R significa "column bind", y se utiliza para combinar vectores, matrices o data frames por columnas, es decir, agrega columnas lado a lado.
+
+```{r}
+cbind(sexo, caso)
+```
+
+Mujeres
+
+```{r}
+# Total de mujeres con la condición
+casos_f <- sum(caso[sexo == "F"])       # Filtra casos en mujeres y suma
+casos_f
+```
+
+```{r}
+# Total de mujeres en la muestra
+n_f <- sum(sexo == "F")
+n_f
+```
+
+```{r}
+# Cálculo de prevalencia en mujeres (%)
+prevalencia_f <- (casos_f / n_f) * 100
+prevalencia_f
+```
+
+Hombres
+
+```{r}
+# ----------------------------
+# Prevalencia en hombres
+# ----------------------------
+
+# Total de hombres con la condición
+casos_m <- sum(caso[sexo == "M"])       # Filtra casos en hombres y suma
+
+# Total de hombres en la muestra
+n_m <- sum(sexo == "M")
+
+# Cálculo de prevalencia en hombres (%)
+prevalencia_m <- (casos_m / n_m) * 100
+prevalencia_m
+```
+
+### Secuencias
+
+R permite crear secuencias de números de forma sencilla, lo cual es muy útil para generar rangos o series con un patrón específico.
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Para generar series de tiempo, índices, o para crear rangos para bucles o simulaciones.
+:::
+
+[Creación:]{style="color:darkred;"}
+
+1.  Operador `::` Crea una secuencia de números enteros consecutivos.
+
+2.  Función `seq():` Permite crear secuencias más complejas, especificando el inicio, el fin y el tamaño del paso.
+
+Parámetros principales:
+
+-   *from*: El número inicial de la secuencia.
+-   *to*: El número final de la secuencia.
+-   *by*: El incremento o decremento entre los números.
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+1:10                           # Secuencia del 1 al 10 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+seq(1, 10, by = 2)             # Secuencia del 1 al 10, de 2 en 2 (1, 3, 5, 7, 9)
+seq(from = 1, to = 10, by = 2) # Lo mismo que el anterior, especificando los parámetros
+```
+
+::: callout-tip
+Por cierto, podemos consultar la documentación de cualquier función escribiendo ?nombre de la función en la consola de R y pulsando la tecla Intro. Por ejemplo, podemos escribir `?seq` para consultar la documentación de la función seq().
+:::
+
+```{r}
+# ?seq
+```
+
+### Repeticiones
+
+La función `rep()` es muy útil para crear vectores repitiendo un valor o una secuencia un número determinado de veces.
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Para crear datos de prueba, inicializar vectores o para generar datos que sigan un patrón repetitivo.
+:::
+
+[Creación:]{style="color:darkred;"}
+
+Función `rep(x = , times = )`:
+
+Parámetros principales:
+
+-   x: El valor o vector a repetir.
+-   times: Cuántas veces se debe repetir el valor o vector completo.
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+rep(1, times = 5) # Repite el número 1, cinco veces (1, 1, 1, 1, 1)
+rep("R", times = 3) # Repite la letra "R", tres veces ("R", "R", "R")
+```
+
+### Matrices
+
+Una matriz es una colección de elementos del mismo tipo de dato, organizada en filas y columnas. Piensen en ella como una tabla de números.
+
+::: callout-note
+##### [Utilidad]{style="color:darkblue;"}
+
+Para organizar datos que tienen una estructura bidimensional y son del mismo tipo (ej.tablas de contingencia).
+:::
+
+[Creación:]{style="color:darkred;"}:
+
+Se crea usando la función `matrix()`.
+
+Parámetros principales:
+
+-   *data*: Los datos que poblarán la matriz.
+-   *nrow*: El número de filas deseado.
+-   *ncol*: El número de columnas deseado.
+-   *byrow*: Un valor lógico (TRUE o FALSE). Si es TRUE, los datos se llenan por fila; si es FALSE (por defecto), se llenan por columna.
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+matriz <- matrix(1:9, nrow = 3, ncol = 3, byrow = FALSE) 
+matriz
+```
+
+```{r}
+matriz <- matrix(1:9, nrow = 3, ncol = 3, byrow = TRUE) 
+matriz
+```
+
+##### Indexación en matrices
+
+La indexación en matrices es la forma en la que accedes a elementos específicos, filas o columnas completas de una matriz. Es una parte fundamental para manipular y analizar datos.
+
+| Código         | Qué devuelve                         |
+|----------------|--------------------------------------|
+| `matriz[i, j]` | Elemento en la fila `i`, columna `j` |
+| `matriz[ , j]` | Toda la **columna** `j`              |
+| `matriz[i, ]`  | Toda la **fila** `i`                 |
+
+[Ejemplos en R:]{style="color:steelblue;"}
+
+```{r}
+# Indexación
+matriz1 <- matrix(1:9, nrow = 3, ncol = 3)
+matriz1[1,2]     # Fila 1, columna 2
+matriz1[ ,3]     # Columna 3
+matriz1[2, ]     # Fila 2
+```
