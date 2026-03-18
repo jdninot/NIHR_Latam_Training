@@ -368,7 +368,7 @@ Para estimar la prevalencia de COVID-19 por sexo durante un periodo, usamos:
 
 $$
 \text{Prevalencia}_{\text{mujeres}} = \left( \frac{\text{Casos en mujeres}}{\text{Total mujeres}} \right) \times 100
-$$ 
+$$
 
 $$
 \text{Prevalencia}_{\text{hombres}} = \left( \frac{\text{Casos en hombres}}{\text{Total hombres}} \right) \times 100
